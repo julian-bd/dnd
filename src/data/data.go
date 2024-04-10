@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/go-sql-driver/mysql"
+	"github.com/google/uuid"
 )
 
 var db *sql.DB
@@ -184,6 +185,28 @@ func InsertPlayableRace(playable_race PlayableRace) (int64, error) {
 	}
 
 	if playable_race.Starting_Proficiency_Options != nil {
+		for _, o := range playable_race.Starting_Proficiency_Options {
+			groupId := uuid.New().String()
+			for _, opt := range o.Options {
+				var proficiencyId int64
+				row := tx.QueryRow(`SELECT id FROM proficiency WHERE proficiency.name=?`, opt)
+				if err := row.Scan(&proficiencyId); err != nil {
+					return 0, err
+				}
+				_, err := tx.Exec(`
+                    INSERT INTO starting_proficiency_option (group_id, proficiency_id, playable_race_id, count)
+                    VALUES (UUID_TO_BIN(?), ?, ?, ?)
+                    `,
+					groupId,
+					proficiencyId,
+					playableRaceId,
+					o.Count,
+				)
+				if err != nil {
+					return 0, err
+				}
+			}
+		}
 	}
 
 	if playable_race.Traits != nil {
@@ -321,21 +344,21 @@ func get_starting_proficiencies(id int) ([]string, error) {
 }
 
 type starting_proficiency_option_row struct {
-	Id    int
-	Name  string
-	Count int
+	GroupId string
+	Name    string
+	Count   int
 }
 
-func get_starting_proficiency_options(id int) ([]starting_proficiency_options, error) {
+func get_starting_hroficiency_options(id int) ([]starting_proficiency_options, error) {
 	query := ` 
-        SELECT starting_proficiency_option.id, proficiency.name, starting_proficiency_option.count
+        SELECT starting_proficiency_option.group_id, proficiency.name, starting_proficiency_option.count
         FROM starting_proficiency_option
         JOIN proficiency
         ON starting_proficiency_option.proficiency_id = proficiency.id
         WHERE starting_proficiency_option.playable_race_id = ?
     `
-	var m map[int]starting_proficiency_options
-	m = make(map[int]starting_proficiency_options)
+	var m map[string]starting_proficiency_options
+	m = make(map[string]starting_proficiency_options)
 
 	rows, err := db.Query(query, id)
 	if err != nil {
@@ -343,13 +366,13 @@ func get_starting_proficiency_options(id int) ([]starting_proficiency_options, e
 	}
 	for rows.Next() {
 		var row starting_proficiency_option_row
-		if err := rows.Scan(&row.Id, &row.Name, &row.Count); err != nil {
+		if err := rows.Scan(&row.GroupId, &row.Name, &row.Count); err != nil {
 			return nil, fmt.Errorf("proficiency option query error (2)")
 		}
-		r := m[row.Id]
+		r := m[row.GroupId]
 		r.Count = row.Count
 		r.Options = append(r.Options, row.Name)
-		m[row.Id] = r
+		m[row.GroupId] = r
 
 	}
 	defer rows.Close()
