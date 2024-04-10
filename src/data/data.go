@@ -17,18 +17,18 @@ func PlayableRaceNames() ([]string, error) {
 	query := `SELECT name FROM playable_race`
 	rows, err := db.Query(query)
 	if err != nil {
-		return nil, fmt.Errorf("error getting playable races (1)")
+		return nil, err
 	}
 	defer rows.Close()
 	for rows.Next() {
 		var pr PlayableRace
 		if err := rows.Scan(&pr.Name); err != nil {
-			return nil, fmt.Errorf("error getting playable races (2)")
+			return nil, err
 		}
 		names = append(names, pr.Name)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("error getting playable races (3)")
+		return nil, err
 	}
 	return names, nil
 }
@@ -44,46 +44,46 @@ func PlayableRaceByName(name string) (PlayableRace, error) {
 		return pr, fmt.Errorf("query error %v: %d", name, err)
 	}
 
-	starting_languages, err := get_starting_languages(pr.ID)
+	startingLanguages, err := startingLanguages(pr.ID)
 	if err != nil {
 		return pr, fmt.Errorf("query error %v: %d", name, err)
 	}
-	pr.Starting_Languages = starting_languages
+	pr.StartingLanguages = startingLanguages
 
-	starting_proficiencies, err := get_starting_proficiencies(pr.ID)
+	startingProficiencies, err := startingProficiencies(pr.ID)
 	if err != nil {
 		return pr, fmt.Errorf("query error %v: %d", name, err)
 	}
-	pr.Starting_Proficiencies = starting_proficiencies
+	pr.StartingProficiencies = startingProficiencies
 
-	starting_ability_bonuses, err := get_starting_ability_bonuses(pr.ID)
+	startingAbilityBonuses, err := startingAbilityBonuses(pr.ID)
 	if err != nil {
 		return pr, fmt.Errorf("query error %v: %d", name, err)
 	}
-	pr.Ability_Bonuses = starting_ability_bonuses
+	pr.AbilityBonuses = startingAbilityBonuses
 
-	starting_traits, err := get_starting_traits(pr.ID)
+	startingTraits, err := startingTraits(pr.ID)
 	if err != nil {
 		return pr, fmt.Errorf("query error %v: %d", name, err)
 	}
-	pr.Traits = starting_traits
+	pr.Traits = startingTraits
 
-	sub_races, err := get_sub_races(pr.ID)
+	subRaces, err := subRaces(pr.ID)
 	if err != nil {
 		return pr, fmt.Errorf("query error %v: %d", name, err)
 	}
-	pr.Sub_Races = sub_races
+	pr.SubRaces = subRaces
 
-	starting_proficiency_options, err := get_starting_proficiency_options(pr.ID)
+	startingProficiencyOptions, err := startingProficiencyOptions(pr.ID)
 	if err != nil {
 		return pr, fmt.Errorf("query error %v: %d", name, err)
 	}
-	pr.Starting_Proficiency_Options = starting_proficiency_options
+	pr.StartingProficiencyOptions = startingProficiencyOptions
 
 	return pr, nil
 }
 
-func InsertPlayableRace(playable_race PlayableRace) (int64, error) {
+func InsertPlayableRace(playableRace PlayableRace) (int64, error) {
 	tx, err := db.Begin()
 	if err != nil {
 		return 0, fmt.Errorf("error creating ctx")
@@ -92,8 +92,8 @@ func InsertPlayableRace(playable_race PlayableRace) (int64, error) {
 
 	result, err := tx.Exec(
 		"INSERT INTO playable_race (name, speed) VALUES (?,?)",
-		playable_race.Name,
-		playable_race.Speed)
+		playableRace.Name,
+		playableRace.Speed)
 	if err != nil {
 		return 0, err
 	}
@@ -103,8 +103,8 @@ func InsertPlayableRace(playable_race PlayableRace) (int64, error) {
 		return 0, fmt.Errorf("insertion error (2)")
 	}
 
-	if playable_race.Ability_Bonuses != nil {
-		for _, bonus := range playable_race.Ability_Bonuses {
+	if playableRace.AbilityBonuses != nil {
+		for _, bonus := range playableRace.AbilityBonuses {
 			var abilityId int64
 			row := tx.QueryRow(`SELECT id FROM ability WHERE ability.name=? LIMIT 1`, bonus.Ability)
 			if err := row.Scan(&abilityId); err != nil {
@@ -124,8 +124,8 @@ func InsertPlayableRace(playable_race PlayableRace) (int64, error) {
 		}
 	}
 
-	if playable_race.Starting_Languages != nil {
-		for _, language := range playable_race.Starting_Languages {
+	if playableRace.StartingLanguages != nil {
+		for _, language := range playableRace.StartingLanguages {
 			var languageId int64
 			row := tx.QueryRow(`SELECT id FROM language WHERE language.name=? LIMIT 1`, language)
 			if err := row.Scan(&languageId); err != nil {
@@ -154,8 +154,8 @@ func InsertPlayableRace(playable_race PlayableRace) (int64, error) {
 		}
 	}
 
-	if playable_race.Starting_Proficiencies != nil {
-		for _, proficiency := range playable_race.Starting_Proficiencies {
+	if playableRace.StartingProficiencies != nil {
+		for _, proficiency := range playableRace.StartingProficiencies {
 			var proficiencyId int64
 			row := tx.QueryRow(`SELECT id FROM proficiency WHERE proficiency.name=? LIMIT 1`, proficiency)
 			if err := row.Scan(&proficiencyId); err != nil {
@@ -184,8 +184,8 @@ func InsertPlayableRace(playable_race PlayableRace) (int64, error) {
 		}
 	}
 
-	if playable_race.Starting_Proficiency_Options != nil {
-		for _, o := range playable_race.Starting_Proficiency_Options {
+	if playableRace.StartingProficiencyOptions != nil {
+		for _, o := range playableRace.StartingProficiencyOptions {
 			groupId := uuid.New().String()
 			for _, opt := range o.Options {
 				var proficiencyId int64
@@ -209,8 +209,8 @@ func InsertPlayableRace(playable_race PlayableRace) (int64, error) {
 		}
 	}
 
-	if playable_race.Traits != nil {
-		for _, trait := range playable_race.Traits {
+	if playableRace.Traits != nil {
+		for _, trait := range playableRace.Traits {
 			var traitId int64
 			row := tx.QueryRow(`SELECT id FROM trait WHERE trait.name=? LIMIT 1`, trait)
 			if err := row.Scan(&traitId); err != nil {
@@ -239,8 +239,8 @@ func InsertPlayableRace(playable_race PlayableRace) (int64, error) {
 		}
 	}
 
-	if playable_race.Sub_Races != nil {
-		for _, subRace := range playable_race.Sub_Races {
+	if playableRace.SubRaces != nil {
+		for _, subRace := range playableRace.SubRaces {
 			var subRaceId int64
 			row := tx.QueryRow(`SELECT id FROM playable_race WHERE playable_race.name=?  LIMIT 1`, subRace)
 			if err := row.Scan(&subRaceId); err != nil {
@@ -265,91 +265,91 @@ func InsertPlayableRace(playable_race PlayableRace) (int64, error) {
 	return playableRaceId, nil
 }
 
-func get_starting_languages(id int) ([]string, error) {
+func startingLanguages(id int) ([]string, error) {
 	query := `
         SELECT language.name AS name
         FROM starting_language
         JOIN language
         ON language.id = starting_language.language_id
         WHERE starting_language.playable_race_id = ?`
-	var starting_languages []string
-	language_rows, err := db.Query(query, id)
+	var startingLanguages []string
+	languageRows, err := db.Query(query, id)
 	if err != nil {
-		return nil, fmt.Errorf("language query error (1)")
+		return nil, err
 	}
-	defer language_rows.Close()
-	for language_rows.Next() {
+	defer languageRows.Close()
+	for languageRows.Next() {
 		var language string
-		if err := language_rows.Scan(&language); err != nil {
-			return nil, fmt.Errorf("language query error (2)")
+		if err := languageRows.Scan(&language); err != nil {
+			return nil, err
 		}
-		starting_languages = append(starting_languages, language)
+		startingLanguages = append(startingLanguages, language)
 	}
-	if err := language_rows.Err(); err != nil {
-		return nil, fmt.Errorf("language query error (3)")
+	if err := languageRows.Err(); err != nil {
+		return nil, err
 	}
-	return starting_languages, nil
+	return startingLanguages, nil
 }
 
-func get_sub_races(id int) ([]string, error) {
+func subRaces(id int) ([]string, error) {
 	query := `
         SELECT playable_race.name
         FROM sub_race
         JOIN playable_race
         ON playable_race.id = sub_race.sub_race_id
         WHERE sub_race.main_race_id = ?`
-	var starting_languages []string
-	sub_race_rows, err := db.Query(query, id)
+	var startingLanguages []string
+	subRaceRows, err := db.Query(query, id)
 	if err != nil {
-		return nil, fmt.Errorf("language query error (1)")
+		return nil, err
 	}
-	defer sub_race_rows.Close()
-	for sub_race_rows.Next() {
+	defer subRaceRows.Close()
+	for subRaceRows.Next() {
 		var language string
-		if err := sub_race_rows.Scan(&language); err != nil {
-			return nil, fmt.Errorf("language query error (2)")
+		if err := subRaceRows.Scan(&language); err != nil {
+			return nil, err
 		}
-		starting_languages = append(starting_languages, language)
+		startingLanguages = append(startingLanguages, language)
 	}
-	if err := sub_race_rows.Err(); err != nil {
-		return nil, fmt.Errorf("language query error (3)")
+	if err := subRaceRows.Err(); err != nil {
+		return nil, err
 	}
-	return starting_languages, nil
+	return startingLanguages, nil
 }
 
-func get_starting_proficiencies(id int) ([]string, error) {
+func startingProficiencies(id int) ([]string, error) {
 	query := `
         SELECT proficiency.name AS name
         FROM starting_proficiency
         JOIN proficiency
         ON proficiency.id = starting_proficiency.proficiency_id
         WHERE starting_proficiency.playable_race_id = ?`
-	var starting_proficiencies []string
-	proficiency_rows, err := db.Query(query, id)
+	var startingProficiencies []string
+	proficiencyRows, err := db.Query(query, id)
 	if err != nil {
-		return nil, fmt.Errorf("proficiency query error (1)")
+		return nil, err
 	}
-	defer proficiency_rows.Close()
-	for proficiency_rows.Next() {
+	defer proficiencyRows.Close()
+	for proficiencyRows.Next() {
 		var proficiency string
-		if err := proficiency_rows.Scan(&proficiency); err != nil {
-			return nil, fmt.Errorf("proficiency query error (2)")
+		if err := proficiencyRows.Scan(&proficiency); err != nil {
+			return nil, err
 		}
-		starting_proficiencies = append(starting_proficiencies, proficiency)
+		startingProficiencies = append(startingProficiencies, proficiency)
 	}
-	if err := proficiency_rows.Err(); err != nil {
-		return nil, fmt.Errorf("proficiency query error (3)")
+	if err := proficiencyRows.Err(); err != nil {
+		return nil, err
 	}
-	return starting_proficiencies, nil
+	return startingProficiencies, nil
 }
 
-type starting_proficiency_option_row struct {
+type startingProficiencyOptionRow struct {
 	GroupId string
 	Name    string
 	Count   int
 }
 
-func get_starting_hroficiency_options(id int) ([]starting_proficiency_options, error) {
+func startingProficiencyOptions(id int) ([]startingProficiencyOption, error) {
 	query := ` 
         SELECT starting_proficiency_option.group_id, proficiency.name, starting_proficiency_option.count
         FROM starting_proficiency_option
@@ -357,17 +357,17 @@ func get_starting_hroficiency_options(id int) ([]starting_proficiency_options, e
         ON starting_proficiency_option.proficiency_id = proficiency.id
         WHERE starting_proficiency_option.playable_race_id = ?
     `
-	var m map[string]starting_proficiency_options
-	m = make(map[string]starting_proficiency_options)
+	var m map[string]startingProficiencyOption
+	m = make(map[string]startingProficiencyOption)
 
 	rows, err := db.Query(query, id)
 	if err != nil {
-		return nil, fmt.Errorf("proficiency option query error (1)")
+		return nil, err
 	}
 	for rows.Next() {
-		var row starting_proficiency_option_row
+		var row startingProficiencyOptionRow
 		if err := rows.Scan(&row.GroupId, &row.Name, &row.Count); err != nil {
-			return nil, fmt.Errorf("proficiency option query error (2)")
+			return nil, err
 		}
 		r := m[row.GroupId]
 		r.Count = row.Count
@@ -377,63 +377,63 @@ func get_starting_hroficiency_options(id int) ([]starting_proficiency_options, e
 	}
 	defer rows.Close()
 
-	var starting_proficiency_options []starting_proficiency_options
+	var startingProficiencyOptions []startingProficiencyOption
 	for _, val := range m {
-		starting_proficiency_options = append(starting_proficiency_options, val)
+		startingProficiencyOptions = append(startingProficiencyOptions, val)
 	}
-	return starting_proficiency_options, nil
+	return startingProficiencyOptions, nil
 }
 
-func get_starting_traits(id int) ([]string, error) {
+func startingTraits(id int) ([]string, error) {
 	query := `
         SELECT trait.name AS name
         FROM starting_trait
         JOIN trait
         ON trait.id = starting_trait.trait_id
         WHERE starting_trait.playable_race_id = ?`
-	var starting_traits []string
-	trait_rows, err := db.Query(query, id)
+	var startingTraits []string
+	traitRows, err := db.Query(query, id)
 	if err != nil {
-		return nil, fmt.Errorf("trait query error (1)")
+		return nil, err
 	}
-	defer trait_rows.Close()
-	for trait_rows.Next() {
+	defer traitRows.Close()
+	for traitRows.Next() {
 		var trait string
-		if err := trait_rows.Scan(&trait); err != nil {
-			return nil, fmt.Errorf("trait query error (2)")
+		if err := traitRows.Scan(&trait); err != nil {
+			return nil, err
 		}
-		starting_traits = append(starting_traits, trait)
+		startingTraits = append(startingTraits, trait)
 	}
-	if err := trait_rows.Err(); err != nil {
-		return nil, fmt.Errorf("trait query error (3)")
+	if err := traitRows.Err(); err != nil {
+		return nil, err
 	}
-	return starting_traits, nil
+	return startingTraits, nil
 }
 
-func get_starting_ability_bonuses(id int) ([]ability_bonus, error) {
+func startingAbilityBonuses(id int) ([]abilityBonus, error) {
 	query := `
         SELECT name, amount
         FROM starting_ability_bonus
         JOIN ability
         ON ability.id = starting_ability_bonus.ability_id
         WHERE starting_ability_bonus.playable_race_id = ?`
-	var ability_bonuses []ability_bonus
-	ability_bonus_rows, err := db.Query(query, id)
+	var abilityBonuses []abilityBonus
+	abilityBonusRows, err := db.Query(query, id)
 	if err != nil {
-		return nil, fmt.Errorf("ability_bonus query error (1)")
+		return nil, err
 	}
-	defer ability_bonus_rows.Close()
-	for ability_bonus_rows.Next() {
-		var ability_bonus ability_bonus
-		if err := ability_bonus_rows.Scan(&ability_bonus.Ability, &ability_bonus.Bonus); err != nil {
-			return nil, fmt.Errorf("ability_bonus query error (2)")
+	defer abilityBonusRows.Close()
+	for abilityBonusRows.Next() {
+		var abilityBonus abilityBonus
+		if err := abilityBonusRows.Scan(&abilityBonus.Ability, &abilityBonus.Bonus); err != nil {
+			return nil, err
 		}
-		ability_bonuses = append(ability_bonuses, ability_bonus)
+		abilityBonuses = append(abilityBonuses, abilityBonus)
 	}
-	if err := ability_bonus_rows.Err(); err != nil {
-		return nil, fmt.Errorf("ability_bonus query error (3)")
+	if err := abilityBonusRows.Err(); err != nil {
+		return nil, err
 	}
-	return ability_bonuses, nil
+	return abilityBonuses, nil
 }
 
 func InitDB() error {
