@@ -87,12 +87,14 @@ CREATE TABLE sub_race (
 
 DROP TABLE IF EXISTS starting_proficiency_option;
 CREATE TABLE starting_proficiency_option (
-    id INT NOT NULL,
+    id          INT AUTO_INCREMENT NOT NULL,
+    group_id    binary(16) NOT NULL,
     proficiency_id INT NOT NULL,
     playable_race_id INT NOT NULL,
     count INT NOT NULL,
     FOREIGN KEY (playable_race_id) REFERENCES playable_race(id),
-    FOREIGN KEY (proficiency_id) REFERENCES proficiency(id)
+    FOREIGN KEY (proficiency_id) REFERENCES proficiency(id),
+    PRIMARY KEY (id)
 );
 
 INSERT INTO ability
@@ -186,8 +188,8 @@ VALUES
     (3, 2);
 
 INSERT INTO starting_proficiency_option
-    (id, proficiency_id, playable_race_id, count)
+    (id, group_id, proficiency_id, playable_race_id, count)
 VALUES
-    (1, 6, 2, 1),
-    (1, 2, 2, 1),
-    (1, 5, 2, 1);
+    (1, UUID_TO_BIN("226b3b72-705c-40f7-b9ed-b7778f9fc534"), 6, 2, 1),
+    (2, UUID_TO_BIN("226b3b72-705c-40f7-b9ed-b7778f9fc534"), 2, 2, 1),
+    (3, UUID_TO_BIN("226b3b72-705c-40f7-b9ed-b7778f9fc534"), 5, 2, 1);
