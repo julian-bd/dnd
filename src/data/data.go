@@ -97,14 +97,13 @@ func InsertPlayableRace(playable_race PlayableRace) (int64, error) {
 		return 0, err
 	}
 
-	playable_race_id, err := result.LastInsertId()
+	playableRaceId, err := result.LastInsertId()
 	if err != nil {
 		return 0, fmt.Errorf("insertion error (2)")
 	}
 
 	if playable_race.Ability_Bonuses != nil {
 		for _, bonus := range playable_race.Ability_Bonuses {
-
 			var abilityId int64
 			row := tx.QueryRow(`SELECT id FROM ability WHERE ability.name=? LIMIT 1`, bonus.Ability)
 			if err := row.Scan(&abilityId); err != nil {
@@ -114,7 +113,7 @@ func InsertPlayableRace(playable_race PlayableRace) (int64, error) {
                     INSERT INTO starting_ability_bonus (playable_race_id, ability_id, amount)
                     VALUES (?, ?, ?)
                 `,
-				playable_race_id,
+				playableRaceId,
 				abilityId,
 				bonus.Bonus,
 			)
@@ -125,24 +124,122 @@ func InsertPlayableRace(playable_race PlayableRace) (int64, error) {
 	}
 
 	if playable_race.Starting_Languages != nil {
+		for _, language := range playable_race.Starting_Languages {
+			var languageId int64
+			row := tx.QueryRow(`SELECT id FROM language WHERE language.name=? LIMIT 1`, language)
+			if err := row.Scan(&languageId); err != nil {
+				if err != sql.ErrNoRows {
+					return 0, err
+				}
+				result, err = tx.Exec(`INSERT INTO language (name) VALUES (?)`, language)
+				if err != nil {
+					return 0, err
+				}
+				languageId, err = result.LastInsertId()
+				if err != nil {
+					return 0, err
+				}
+			}
+			_, err := tx.Exec(`
+                    INSERT INTO starting_language (playable_race_id, language_id)
+                    VALUES (?, ?)
+                `,
+				playableRaceId,
+				languageId,
+			)
+			if err != nil {
+				return 0, err
+			}
+		}
 	}
 
 	if playable_race.Starting_Proficiencies != nil {
+		for _, proficiency := range playable_race.Starting_Proficiencies {
+			var proficiencyId int64
+			row := tx.QueryRow(`SELECT id FROM proficiency WHERE proficiency.name=? LIMIT 1`, proficiency)
+			if err := row.Scan(&proficiencyId); err != nil {
+				if err != sql.ErrNoRows {
+					return 0, err
+				}
+				result, err = tx.Exec(`INSERT INTO proficiency (name) VALUES (?)`, proficiency)
+				if err != nil {
+					return 0, err
+				}
+				proficiencyId, err = result.LastInsertId()
+				if err != nil {
+					return 0, err
+				}
+			}
+			_, err := tx.Exec(`
+                    INSERT INTO starting_proficiency (playable_race_id, proficiency_id)
+                    VALUES (?, ?)
+                `,
+				playableRaceId,
+				proficiencyId,
+			)
+			if err != nil {
+				return 0, err
+			}
+		}
 	}
 
 	if playable_race.Starting_Proficiency_Options != nil {
 	}
 
 	if playable_race.Traits != nil {
+		for _, trait := range playable_race.Traits {
+			var traitId int64
+			row := tx.QueryRow(`SELECT id FROM trait WHERE trait.name=? LIMIT 1`, trait)
+			if err := row.Scan(&traitId); err != nil {
+				if err != sql.ErrNoRows {
+					return 0, err
+				}
+				result, err = tx.Exec(`INSERT INTO trait (name) VALUES (?)`, trait)
+				if err != nil {
+					return 0, err
+				}
+				traitId, err = result.LastInsertId()
+				if err != nil {
+					return 0, err
+				}
+			}
+			_, err := tx.Exec(`
+                    INSERT INTO starting_trait (playable_race_id, trait_id)
+                    VALUES (?, ?)
+                `,
+				playableRaceId,
+				traitId,
+			)
+			if err != nil {
+				return 0, err
+			}
+		}
 	}
 
 	if playable_race.Sub_Races != nil {
+		for _, subRace := range playable_race.Sub_Races {
+			var subRaceId int64
+			row := tx.QueryRow(`SELECT id FROM playable_race WHERE playable_race.name=?  LIMIT 1`, subRace)
+			if err := row.Scan(&subRaceId); err != nil {
+				return 0, err
+			}
+			_, err := tx.Exec(`
+                    INSERT INTO sub_race (sub_race_id, main_race_id)
+                    VALUES (?, ?)
+                `,
+				subRaceId,
+				playableRaceId,
+			)
+			if err != nil {
+				return 0, err
+			}
+		}
 	}
 
 	if err = tx.Commit(); err != nil {
-		return 0, fmt.Errorf("insertion error (3)")
+		return 0, err
 	}
-	return playable_race_id, nil
+	return playableRaceId, nil
 }
 
 func get_starting_languages(id int) ([]string, error) {
