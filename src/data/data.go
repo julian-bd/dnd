@@ -104,13 +104,18 @@ func InsertPlayableRace(playable_race PlayableRace) (int64, error) {
 
 	if playable_race.Ability_Bonuses != nil {
 		for _, bonus := range playable_race.Ability_Bonuses {
+
+			var abilityId int64
+			row := tx.QueryRow(`SELECT id FROM ability WHERE ability.name=? LIMIT 1`, bonus.Ability)
+			if err := row.Scan(&abilityId); err != nil {
+				return 0, err
+			}
 			_, err := tx.Exec(`
-                    SET @abilityId = (SELECT id FROM ability WHERE ability.name=? LIMIT 1);
                     INSERT INTO starting_ability_bonus (playable_race_id, ability_id, amount)
-                    VALUES (?, @abilityId, ?)
+                    VALUES (?, ?, ?)
                 `,
-				bonus.Ability,
 				playable_race_id,
+				abilityId,
 				bonus.Bonus,
 			)
 			if err != nil {
