@@ -1,0 +1,30 @@
+{{ block "index" . }}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>
+            dnd
+        </title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href="css/styles.css" rel="stylesheet">
+    </head>
+    <body>
+        <h1>
+            dnd
+        </h1>
+        <div>
+            <h2>
+                Playable Races
+            </h2>
+            <ul>
+                {{ range .PlayableRaceNames }}
+                    <li>
+                        <a href="/PlayableRaces/{{.}}">{{ . }}</a>
+                    </li>
+                {{ end }}
+            </ul>
+        </div>
+    </body>
+</html>
+{{ end }}
