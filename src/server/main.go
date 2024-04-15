@@ -2,78 +2,19 @@ package main
 
 import (
 	"fmt"
-	"html/template"
-	"io"
 	"net/http"
+	"strings"
 
 	"github.com/julian-bd/dnd/data"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-
-	"github.com/gin-gonic/gin"
 )
-
-func getPlayableRaces(c *gin.Context) {
-	result, err := data.PlayableRaceNames()
-	if err != nil {
-		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "playable race names not found"})
-		c.AbortWithError(http.StatusConflict, err)
-	}
-	c.IndentedJSON(http.StatusOK, result)
-}
-
-func getPlayableRace(c *gin.Context) {
-	name := c.Param("name")
-	result, err := data.PlayableRaceByName(name)
-	if err != nil {
-		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "playable race not found"})
-		c.AbortWithError(http.StatusConflict, err)
-	}
-	c.IndentedJSON(http.StatusOK, result)
-}
-
-func postPlayableRaces(c *gin.Context) {
-	var newPlayableRace data.PlayableRace
-	if err := c.BindJSON(&newPlayableRace); err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
-		return
-	}
-	_, err := data.InsertPlayableRace(newPlayableRace)
-	if err != nil {
-		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "saving playable race failed"})
-		c.AbortWithError(http.StatusConflict, err)
-	}
-	c.IndentedJSON(http.StatusCreated, newPlayableRace)
-}
-
-type Templates struct {
-	templates *template.Template
-}
-
-func (t *Templates) Render(w io.Writer, name string, data interface{}, c echo.Context) error {
-	return t.templates.ExecuteTemplate(w, name, data)
-}
-
-func newTemplate() *Templates {
-	return &Templates{
-		templates: template.Must(template.ParseGlob("server/views/*.html")),
-	}
-}
-
-type indexContent struct {
-	PlayableRaceNames []string
-}
 
 func main() {
 	err := data.InitDB()
 	if err != nil {
 		fmt.Println(err)
 	}
-	//router := gin.Default()
-	//router.GET("/api/playable_races", getPlayableRaces)
-	//router.GET("/api/playable_races/:name", getPlayableRace)
-	//router.POST("/api/playable_races", postPlayableRaces)
-	//router.Run("localhost:8080")
 
 	playableRaceNames, err := data.PlayableRaceNames()
 	if err != nil {
@@ -101,5 +42,65 @@ func main() {
 		return c.Render(200, "playable_race", data)
 	})
 
+	e.GET("/PlayableRaces", func(c echo.Context) error {
+		l, err := data.LanguageNames()
+		a, err := data.AbilityNames()
+		t, err := data.TraitNames()
+		p, err := data.ProficiencyNames()
+		s, err := data.PlayableRaceNames()
+		if err != nil {
+			// TODO: Something
+		}
+		d := playableRaceContent{
+			Abilities:     a,
+			Languages:     l,
+			Proficiencies: p,
+			SubRaces:      s,
+			Traits:        t,
+		}
+		return c.Render(200, "add_race", d)
+	})
+
+	e.POST("/PlayableRaces", func(c echo.Context) error {
+		var request createPlayableRace
+		err := c.Bind(&request)
+		if err != nil {
+			fmt.Println(err)
+			return c.String(http.StatusBadRequest, "binding failed")
+		}
+		fmt.Println(request)
+
+		pr, err := playableRace(request)
+		if err != nil {
+			fmt.Println(err)
+			return c.String(http.StatusBadRequest, "mapping failed")
+		}
+		fmt.Println(pr)
+		_, err = data.InsertPlayableRace(pr)
+		if err != nil {
+			fmt.Println(err)
+			return c.String(http.StatusInternalServerError, "data saving failed")
+		}
+
+		n, err := data.PlayableRaceByName(pr.Name)
+		if err != nil {
+			fmt.Println(err)
+			return c.String(http.StatusInternalServerError, "data retrieval failed")
+		}
+		return c.Render(200, "/PlayableRaces/"+pr.Name, n)
+	})
+
 	e.Logger.Fatal(e.Start(":8080"))
+}
+
+func playableRace(request createPlayableRace) (data.PlayableRace, error) {
+	var pr data.PlayableRace
+	pr.Name = request.Name
+	pr.Speed = request.Speed
+	pr.StartingLanguages = strings.Split(request.Languages, ",")
+	pr.StartingProficiencies = strings.Split(request.Proficiencies, ",")
+	pr.Traits = strings.Split(request.Traits, ",")
+	pr.SubRaces = strings.Split(request.SubRaces, ",")
+	// TODO: ability bonuses
+	return pr, nil
 }
