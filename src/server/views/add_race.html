@@ -1,0 +1,39 @@
+{{ block "add_race" . }}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>dnd</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+    </head>
+    <body>
+        <h1>Add Race</h1> 
+        <div>
+            {{ template "add_playable_race" . }}
+        </div>
+    </body>
+</html>
+{{ end }}
+
+{{ block "add_playable_race" . }}
+<form action="/PlayableRaces" method="POST" style="display: flex; flex-direction: column">
+    <label> name: <input type="text" name="name" id="name"> </label>
+    <label> speed: <input type="number" name="speed" id="speed"> </label>
+
+    <label> languages: <select name="languages" multiple> {{ template "select_list" .Languages }} </select> </label>
+    <label> abilities: <select name="abilities" multiple> {{ template "select_list" .Abilities }} </select> </label>
+    <label> proficiencies: <select name="proficiencies" multiple> {{ template "select_list" .Proficiencies }} </select> </label>
+    <label> subraces: <select name="subraces" multiple> {{ template "select_list" .SubRaces }} </select> </label>
+    <label> traits: <select name="traits" multiple> {{ template "select_list" .Traits }} </select> </label>
+
+    <button type="submit">Submit</button>
+</form>
+{{ end }}
+
+{{ block "select_list" . }}
+    {{ range . }}
+        <option value={{.}}>{{.}}</option>
+    {{ end }}
+    </select>
+{{ end }}
+

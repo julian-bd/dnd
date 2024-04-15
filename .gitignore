@@ -18,3 +18,5 @@ secrets/*
 
 # Go workspace file
 go.work
+
+tmp/*
