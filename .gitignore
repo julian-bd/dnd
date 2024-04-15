@@ -20,3 +20,5 @@ secrets/*
 go.work
 
 tmp/*
+src/node_modules/*
+src/tmp/*

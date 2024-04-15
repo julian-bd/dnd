@@ -1,13 +1,9 @@
 {{ block "add_race" . }}
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <title>dnd</title>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-    </head>
+    {{ template "head" . }}
     <body>
-        <h1>Add Race</h1> 
+        {{ template "header" . }}
         <div>
             {{ template "add_playable_race" . }}
         </div>
@@ -16,7 +12,7 @@
 {{ end }}
 
 {{ block "add_playable_race" . }}
-<form action="/PlayableRaces" method="POST" style="display: flex; flex-direction: column">
+<form action="/PlayableRaces" method="POST" class=".flex">
     <label> name: <input type="text" name="name" id="name"> </label>
     <label> speed: <input type="number" name="speed" id="speed"> </label>
 

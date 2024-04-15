@@ -20,15 +20,20 @@ func main() {
 	if err != nil {
 		fmt.Println(err)
 	}
-	content := indexContent{
+
+	headerContent := headerContent{
 		PlayableRaceNames: playableRaceNames,
 	}
 
 	e := echo.New()
 	e.Use(middleware.Logger())
+	e.File("/css/styles.css", "server/views/css/styles.css")
 	e.Renderer = newTemplate()
 
 	e.GET("/", func(c echo.Context) error {
+		content := indexContent{
+			HeaderContent: headerContent,
+		}
 		return c.Render(200, "index", content)
 	})
 
@@ -39,7 +44,18 @@ func main() {
 			e.Logger.Error(err)
 			return c.Redirect(404, "not_found")
 		}
-		return c.Render(200, "playable_race", data)
+		content := playableRaceContent{
+			HeaderContent:  headerContent,
+			AbilityBonuses: data.AbilityBonuses,
+			Languages:      data.StartingLanguages,
+			Name:           name,
+			Proficiencies:  data.StartingProficiencies,
+			SubRaces:       data.SubRaces,
+			Traits:         data.Traits,
+			Speed:          data.Speed,
+		}
+
+		return c.Render(200, "playable_race", content)
 	})
 
 	e.GET("/PlayableRaces", func(c echo.Context) error {
@@ -51,7 +67,8 @@ func main() {
 		if err != nil {
 			// TODO: Something
 		}
-		d := playableRaceContent{
+		d := createPlayableRaceContent{
+			HeaderContent: headerContent,
 			Abilities:     a,
 			Languages:     l,
 			Proficiencies: p,

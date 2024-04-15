@@ -1,18 +1,10 @@
 {{ block "playable_race" . }}
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <title>
-            dnd
-        </title>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link href="css/styles.css" rel="stylesheet">
-    </head>
+    {{ template "head" . }}
     <body>
-        <h1>
-            {{ .Name }}
-        </h1>
+        {{ template "header" . }}
+        <h1> {{ .Name }} </h1>
         <div>
             <h2>Speed</h2>
             {{ .Speed }}
@@ -22,15 +14,15 @@
         <h2>Ability Bonuses</h2>
         <ul>
             {{ range.AbilityBonuses }}
-            <li>{{ .Ability }}: +{{ .Bonus }}</li>
-        {{ end }}
+                <li>{{ .Ability }}: +{{ .Bonus }}</li>
+            {{ end }}
         </ul>
     </div>
 
     <div>
         <h2>Starting Languages</h2>
         <ul>
-        {{ range.StartingLanguages }}
+        {{ range.Languages }}
             <li>{{ . }}</li>
         {{ end }}
         </ul>
@@ -39,7 +31,7 @@
     <div>
         <h2>Starting Proficiencies</h2>
         <ul>
-            {{ range.StartingProficiencies }}
+            {{ range.Proficiencies }}
             <li>{{ . }}</li>
             {{ end }}
         </ul>

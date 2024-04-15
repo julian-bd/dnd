@@ -1,31 +1,43 @@
 {{ block "index" . }}
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <title>
-            dnd
-        </title>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link href="css/styles.css" rel="stylesheet">
-    </head>
+    {{ template "head" . }}
     <body>
-        <h1>
-            dnd
-        </h1>
+        {{ template "header" . }}
         <div>
-            <h2>
-                Playable Races
-            </h2>
-            <a href="/PlayableRaces">Add race</a>
-            <ul>
-                {{ range .PlayableRaceNames }}
-                    <li>
-                        <a href="/PlayableRaces/{{.}}">{{ . }}</a>
-                    </li>
-                {{ end }}
-            </ul>
         </div>
     </body>
 </html>
 {{ end }}
+
+{{ block "head" . }}
+<head>
+    <title>
+        D&D
+    </title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://unpkg.com/htmx.org@1.9.11" integrity="sha384-0gxUXCCR8yv9FM2b+U3FDbsKthCI66oH5IA9fHppQq9DDMHuMauqq1ZHBpJxQ0J0" crossorigin="anonymous"></script>
+    <link href="/css/styles.css" rel="stylesheet">
+</head>
+{{ end }}
+
+{{ block "header" . }}
+<div>
+    <h1>D&D</h1>
+    <ul class="flex flex-row gap-4">
+        <li class="bg-gray hover:bg-gray-dark rounded"> <a href="/">Home</a> </li>
+        <li class="bg-gray hover:bg-gray-dark rounded"> <a href="/PlayableRaces">Add race</a> </li>
+        <li class="bg-gray hover:bg-gray-dark rounded">
+            <select>
+            <label> Races </label>
+            {{ range .HeaderContent.PlayableRaceNames }}
+                <option hx-get="/PlayableRaces/{{.}}" hx-target="body">{{ . }}</option>
+            {{ end }}
+            </select>
+
+        </li>
+    </ul>
+</div>
+{{ end }}
+
