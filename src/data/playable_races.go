@@ -11,7 +11,7 @@ type PlayableRace struct {
 	ID                         int                         `json:"id"`
 	Name                       string                      `json:"name"`
 	Speed                      int                         `json:"speed"`
-	AbilityBonuses             []abilityBonus              `json:"ability_bonuses"`
+	AbilityBonuses             []AbilityBonus              `json:"ability_bonuses"`
 	StartingLanguages          []string                    `json:"starting_languages"`
 	StartingProficiencies      []string                    `json:"starting_proficiencies"`
 	StartingProficiencyOptions []startingProficiencyOption `json:"starting_proficiency_options"`
@@ -19,7 +19,7 @@ type PlayableRace struct {
 	SubRaces                   []string                    `json:"sub_races"`
 }
 
-type abilityBonus struct {
+type AbilityBonus struct {
 	Ability string `json:"ability"`
 	Bonus   int    `json:"bonus"`
 }
@@ -371,6 +371,53 @@ type startingProficiencyOptionRow struct {
 	Count   int
 }
 
+/*
+DROP TABLE IF EXISTS ability;
+CREATE TABLE ability (
+
+	id          INT AUTO_INCREMENT NOT NULL,
+	name        VARCHAR(128) NOT NULL,
+	PRIMARY KEY (id),
+	UNIQUE (name)
+
+);
+
+DROP TABLE IF EXISTS starting_ability_bonus;
+CREATE TABLE starting_ability_bonus (
+
+	playable_race_id INT NOT NULL,
+	ability_id INT NOT NULL,
+	amount INT NOT NULL,
+	FOREIGN KEY (playable_race_id) REFERENCES playable_race(id),
+	FOREIGN KEY (ability_id) REFERENCES ability(id),
+	CONSTRAINT id UNIQUE (playable_race_id, ability_id)
+
+);
+*/
+func abilityBonuses(id int) ([]AbilityBonus, error) {
+	query := `
+        SELECT ability.name, bonus.amount
+        FROM ability
+        JOIN starting_ability_bonus AS bonus
+        ON ability.id = bonus.ability_id
+        WHERE bonus.player_race_id = ?
+    `
+	var bs []AbilityBonus
+	rows, err := db.Query(query, id)
+	if err != nil {
+		return nil, err
+	}
+	for rows.Next() {
+		var b AbilityBonus
+		if err := rows.Scan(b); err != nil {
+			return nil, err
+		}
+		bs = append(bs, b)
+	}
+
+	return bs, nil
+}
+
 func startingProficiencyOptions(id int) ([]startingProficiencyOption, error) {
 	query := ` 
         SELECT starting_proficiency_option.group_id, proficiency.name, starting_proficiency_option.count
@@ -432,21 +479,21 @@ func startingTraits(id int) ([]string, error) {
 	return startingTraits, nil
 }
 
-func startingAbilityBonuses(id int) ([]abilityBonus, error) {
+func startingAbilityBonuses(id int) ([]AbilityBonus, error) {
 	query := `
         SELECT name, amount
         FROM starting_ability_bonus
         JOIN ability
         ON ability.id = starting_ability_bonus.ability_id
         WHERE starting_ability_bonus.playable_race_id = ?`
-	var abilityBonuses []abilityBonus
+	var abilityBonuses []AbilityBonus
 	abilityBonusRows, err := db.Query(query, id)
 	if err != nil {
 		return nil, err
 	}
 	defer abilityBonusRows.Close()
 	for abilityBonusRows.Next() {
-		var abilityBonus abilityBonus
+		var abilityBonus AbilityBonus
 		if err := abilityBonusRows.Scan(&abilityBonus.Ability, &abilityBonus.Bonus); err != nil {
 			return nil, err
 		}
