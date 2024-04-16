@@ -4,55 +4,58 @@
     {{ template "head" . }}
     <body>
         {{ template "header" . }}
+    <div class="p-5 border rounded w-1/2 flex flex-row flex-wrap shadow-2xl gap-4 content-around">
         <h1> {{ .Name }} </h1>
         <div>
             <h2>Speed</h2>
             {{ .Speed }}
         </div>
 
-    <div>
-        <h2>Ability Bonuses</h2>
-        <ul>
-            {{ range.AbilityBonuses }}
-                <li>{{ .Ability }}: +{{ .Bonus }}</li>
-            {{ end }}
-        </ul>
-    </div>
+        <div>
+            <h2>Ability Bonuses</h2>
+            <ul>
+                {{ range.AbilityBonuses }}
+                    <li>{{ .Ability }}: +{{ .Bonus }}</li>
+                {{ end }}
+            </ul>
+        </div>
 
-    <div>
-        <h2>Starting Languages</h2>
-        <ul>
-        {{ range.Languages }}
-            <li>{{ . }}</li>
-        {{ end }}
-        </ul>
-    </div>
-
-    <div>
-        <h2>Starting Proficiencies</h2>
-        <ul>
-            {{ range.Proficiencies }}
-            <li>{{ . }}</li>
+        <div>
+            <h2>Languages</h2>
+            <ul>
+            {{ range.Languages }}
+                <li>{{ . }}</li>
             {{ end }}
-        </ul>
-    </div>
+            </ul>
+        </div>
 
-    <div>
-        <h2>Traits</h2>
-        <ul>
-            {{ range.Traits }}
-            <li>{{ . }}</li>
-            {{ end }}
-        </ul>
-    </div>
+        <div>
+            <h2>Proficiencies</h2>
+            <ul>
+                {{ range.Proficiencies }}
+                <li>{{ . }}</li>
+                {{ end }}
+            </ul>
+        </div>
 
-    <div>
-        <h2>Sub Races</h2>
-        <ul>
-            {{ range.SubRaces }}
-            <li>{{ . }}</li>
-            {{ end }}
-        </ul>
+        <div>
+            <h2>Traits</h2>
+            <ul>
+                {{ range.Traits }}
+                <li>{{ . }}</li>
+                {{ end }}
+            </ul>
+        </div>
+
+        <div>
+            <h2>Sub Races</h2>
+            <ul>
+                {{ range.SubRaces }}
+                <li>{{ . }}</li>
+                {{ end }}
+            </ul>
+        </div>
+
     </div>
 
     </body>
