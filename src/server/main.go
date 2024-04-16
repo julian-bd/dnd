@@ -52,7 +52,7 @@ func main() {
 			HeaderContent:  headerContent,
 			AbilityBonuses: data.AbilityBonuses,
 			Languages:      data.StartingLanguages,
-			Name:           name,
+			Name:           data.Name,
 			Proficiencies:  data.StartingProficiencies,
 			SubRaces:       data.SubRaces,
 			Traits:         data.Traits,
