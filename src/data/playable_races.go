@@ -2,7 +2,6 @@ package data
 
 import (
 	"database/sql"
-	"fmt"
 
 	"github.com/google/uuid"
 )
@@ -61,44 +60,44 @@ func PlayableRaceByName(name string) (PlayableRace, error) {
 	row := db.QueryRow("SELECT id, name, speed FROM playable_race WHERE name = ?", name)
 	if err := row.Scan(&pr.ID, &pr.Name, &pr.Speed); err != nil {
 		if err == sql.ErrNoRows {
-			return pr, fmt.Errorf("no such race: %v", name)
+			return pr, err
 		}
-		return pr, fmt.Errorf("query error %v: %d", name, err)
+		return pr, err
 	}
 
 	startingLanguages, err := startingLanguages(pr.ID)
 	if err != nil {
-		return pr, fmt.Errorf("query error %v: %d", name, err)
+		return pr, err
 	}
 	pr.StartingLanguages = startingLanguages
 
 	startingProficiencies, err := startingProficiencies(pr.ID)
 	if err != nil {
-		return pr, fmt.Errorf("query error %v: %d", name, err)
+		return pr, err
 	}
 	pr.StartingProficiencies = startingProficiencies
 
 	startingAbilityBonuses, err := startingAbilityBonuses(pr.ID)
 	if err != nil {
-		return pr, fmt.Errorf("query error %v: %d", name, err)
+		return pr, err
 	}
 	pr.AbilityBonuses = startingAbilityBonuses
 
 	startingTraits, err := startingTraits(pr.ID)
 	if err != nil {
-		return pr, fmt.Errorf("query error %v: %d", name, err)
+		return pr, err
 	}
 	pr.Traits = startingTraits
 
 	subRaces, err := subRaces(pr.ID)
 	if err != nil {
-		return pr, fmt.Errorf("query error %v: %d", name, err)
+		return pr, err
 	}
 	pr.SubRaces = subRaces
 
 	startingProficiencyOptions, err := startingProficiencyOptions(pr.ID)
 	if err != nil {
-		return pr, fmt.Errorf("query error %v: %d", name, err)
+		return pr, err
 	}
 	pr.StartingProficiencyOptions = startingProficiencyOptions
 
@@ -132,7 +131,7 @@ func InsertLanguage(trait string) error {
 func InsertPlayableRace(playableRace PlayableRace) (int64, error) {
 	tx, err := db.Begin()
 	if err != nil {
-		return 0, fmt.Errorf("error creating ctx")
+		return 0, err
 	}
 	defer tx.Rollback()
 
@@ -146,7 +145,7 @@ func InsertPlayableRace(playableRace PlayableRace) (int64, error) {
 
 	playableRaceId, err := result.LastInsertId()
 	if err != nil {
-		return 0, fmt.Errorf("insertion error (2)")
+		return 0, err
 	}
 
 	if playableRace.AbilityBonuses != nil {
