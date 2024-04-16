@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/julian-bd/dnd/data"
+	"github.com/julian-bd/dnd/ripper"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -15,6 +16,9 @@ func main() {
 	if err != nil {
 		fmt.Println(err)
 	}
+
+    // TODO: Only seed once
+    ripper.Seed()
 
 	playableRaceNames, err := data.PlayableRaceNames()
 	if err != nil {
