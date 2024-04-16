@@ -14,7 +14,7 @@ type PlayableRace struct {
 	AbilityBonuses             []AbilityBonus              `json:"ability_bonuses"`
 	StartingLanguages          []string                    `json:"starting_languages"`
 	StartingProficiencies      []string                    `json:"starting_proficiencies"`
-	StartingProficiencyOptions []startingProficiencyOption `json:"starting_proficiency_options"`
+	StartingProficiencyOptions []StartingProficiencyOption `json:"starting_proficiency_options"`
 	Traits                     []string                    `json:"traits"`
 	SubRaces                   []string                    `json:"sub_races"`
 }
@@ -29,7 +29,7 @@ type trait struct {
 	Description string `json:"description"`
 }
 
-type startingProficiencyOption struct {
+type StartingProficiencyOption struct {
 	Count   int      `json:"count"`
 	Options []string `json:"options"`
 }
@@ -103,6 +103,30 @@ func PlayableRaceByName(name string) (PlayableRace, error) {
 	pr.StartingProficiencyOptions = startingProficiencyOptions
 
 	return pr, nil
+}
+
+func InsertTrait(trait string) error {
+    _, err := db.Exec("INSERT INTO trait (name) VALUES (?)", trait)
+    if err != nil {
+        return err
+    }
+    return nil
+}
+
+func InsertProficiency(trait string) error {
+    _, err := db.Exec("INSERT INTO proficiency (name) VALUES (?)", trait)
+    if err != nil {
+        return err
+    }
+    return nil
+}
+
+func InsertLanguage(trait string) error {
+    _, err := db.Exec("INSERT INTO language (name) VALUES (?)", trait)
+    if err != nil {
+        return err
+    }
+    return nil
 }
 
 func InsertPlayableRace(playableRace PlayableRace) (int64, error) {
@@ -418,7 +442,7 @@ func abilityBonuses(id int) ([]AbilityBonus, error) {
 	return bs, nil
 }
 
-func startingProficiencyOptions(id int) ([]startingProficiencyOption, error) {
+func startingProficiencyOptions(id int) ([]StartingProficiencyOption, error) {
 	query := ` 
         SELECT starting_proficiency_option.group_id, proficiency.name, starting_proficiency_option.count
         FROM starting_proficiency_option
@@ -426,8 +450,8 @@ func startingProficiencyOptions(id int) ([]startingProficiencyOption, error) {
         ON starting_proficiency_option.proficiency_id = proficiency.id
         WHERE starting_proficiency_option.playable_race_id = ?
     `
-	var m map[string]startingProficiencyOption
-	m = make(map[string]startingProficiencyOption)
+	var m map[string]StartingProficiencyOption
+	m = make(map[string]StartingProficiencyOption)
 
 	rows, err := db.Query(query, id)
 	if err != nil {
@@ -446,7 +470,7 @@ func startingProficiencyOptions(id int) ([]startingProficiencyOption, error) {
 	}
 	defer rows.Close()
 
-	var startingProficiencyOptions []startingProficiencyOption
+	var startingProficiencyOptions []StartingProficiencyOption
 	for _, val := range m {
 		startingProficiencyOptions = append(startingProficiencyOptions, val)
 	}

@@ -39,6 +39,7 @@ CREATE TABLE language (
     UNIQUE (name)
 );
 
+
 DROP TABLE IF EXISTS starting_ability_bonus;
 CREATE TABLE starting_ability_bonus (
     playable_race_id INT NOT NULL,
@@ -50,6 +51,7 @@ CREATE TABLE starting_ability_bonus (
 );
 
 
+
 DROP TABLE IF EXISTS starting_proficiency;
 CREATE TABLE starting_proficiency (
     playable_race_id INT NOT NULL,
@@ -59,6 +61,7 @@ CREATE TABLE starting_proficiency (
     CONSTRAINT id UNIQUE (playable_race_id, proficiency_id)
 );
 
+
 DROP TABLE IF EXISTS starting_language;
 CREATE TABLE starting_language (
     playable_race_id INT NOT NULL,
@@ -67,6 +70,7 @@ CREATE TABLE starting_language (
     FOREIGN KEY (language_id) REFERENCES language(id),
     CONSTRAINT id UNIQUE (playable_race_id, language_id)
 );
+
 
 DROP TABLE IF EXISTS starting_trait;
 CREATE TABLE starting_trait (
@@ -106,90 +110,3 @@ VALUES
     (4, "INT"),
     (5, "STR"),
     (6, "WIS");
-
-INSERT INTO proficiency
-    (id, name)
-VALUES
-    (1, "Battleaxes"),
-    (2, "Brewer's Supplies"),
-    (3, "Handaxes"),
-    (4, "Light hammers"),
-    (5, "Mason's Tools"),
-    (6, "Smith's Tools"),
-    (7, "Warhammers");
-
-INSERT INTO language
-    (id, name)
-VALUES
-    (1, "Draconic"),
-    (2, "Dwarvish"),
-    (3, "Common");
-
-INSERT INTO trait
-    (id, name)
-VALUES
-    (1, "Breath Weapon"),
-    (3, "Damage Resistance"),
-    (4, "Darkvision"),
-    (5, "Draconic Ancestry"),
-    (6, "Dwarven Combat Training"),
-    (7, "Dwarven Resilience"),
-    (8, "Stonecunning"),
-    (9, "Tool Proficiency");
-
-INSERT INTO playable_race
-    (id, name, speed)
-VALUES
-    (1, "Dragonborn", 30), 
-    (2, "Dwarf", 25), 
-    (3, "Hill Dwarf", 25);
-
-INSERT INTO starting_ability_bonus
-    (playable_race_id, ability_id, amount)
-VALUES
-    (1, 5, 2),
-    (1, 1, 1),
-    (2, 2, 2);
-
-INSERT INTO starting_proficiency
-    (playable_race_id , proficiency_id)
-VALUES
-    (2, 1),
-    (2, 2),
-    (2, 3),
-    (2, 4),
-    (2, 5),
-    (2, 6),
-    (2, 7);
-
-INSERT INTO starting_language
-    (playable_race_id, language_id)
-VALUES
-    (1, 1),
-    (1, 3),
-    (2, 3),
-    (2, 2);
-
-INSERT INTO starting_trait
-    (playable_race_id , trait_id)
-VALUES
-    (1, 1),
-    (1, 3),
-    (1, 5),
-    (2, 4),
-    (2, 6),
-    (2, 7),
-    (2, 8),
-    (2, 9);
-
-INSERT INTO sub_race
-    (sub_race_id, main_race_id)
-VALUES
-    (3, 2);
-
-INSERT INTO starting_proficiency_option
-    (id, group_id, proficiency_id, playable_race_id, count)
-VALUES
-    (1, UUID_TO_BIN("226b3b72-705c-40f7-b9ed-b7778f9fc534"), 6, 2, 1),
-    (2, UUID_TO_BIN("226b3b72-705c-40f7-b9ed-b7778f9fc534"), 2, 2, 1),
-    (3, UUID_TO_BIN("226b3b72-705c-40f7-b9ed-b7778f9fc534"), 5, 2, 1);
