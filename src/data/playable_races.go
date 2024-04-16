@@ -54,54 +54,107 @@ func PlayableRaceNames() ([]string, error) {
 	return names, nil
 }
 
+func hydrateRace(playableRace PlayableRace) (PlayableRace, error) {
+	startingLanguages, err := startingLanguages(playableRace.ID)
+	if err != nil {
+		return playableRace, err
+	}
+	playableRace.StartingLanguages = startingLanguages
+
+	startingProficiencies, err := startingProficiencies(playableRace.ID)
+	if err != nil {
+		return playableRace, err
+	}
+	playableRace.StartingProficiencies = startingProficiencies
+
+	startingAbilityBonuses, err := startingAbilityBonuses(playableRace.ID)
+	if err != nil {
+		return playableRace, err
+	}
+	playableRace.AbilityBonuses = startingAbilityBonuses
+
+	startingTraits, err := startingTraits(playableRace.ID)
+	if err != nil {
+		return playableRace, err
+	}
+	playableRace.Traits = startingTraits
+
+	subRaces, err := subRaces(playableRace.ID)
+	if err != nil {
+		return playableRace, err
+	}
+	playableRace.SubRaces = subRaces
+
+	startingProficiencyOptions, err := startingProficiencyOptions(playableRace.ID)
+	if err != nil {
+		return playableRace, err
+	}
+	playableRace.StartingProficiencyOptions = startingProficiencyOptions
+
+	return HydrateSubRace(playableRace)
+}
+
+func PlayableRaceById(id int) (PlayableRace, error) {
+	var playableRace PlayableRace
+
+	row := db.QueryRow("SELECT id, name, speed FROM playable_race WHERE id = ?", id)
+	if err := row.Scan(&playableRace.ID, &playableRace.Name, &playableRace.Speed); err != nil {
+		if err == sql.ErrNoRows {
+			return playableRace, err
+		}
+		return playableRace, err
+	}
+
+    return hydrateRace(playableRace)
+}
+
 func PlayableRaceByName(name string) (PlayableRace, error) {
-	var pr PlayableRace
+	var playableRace PlayableRace
 
 	row := db.QueryRow("SELECT id, name, speed FROM playable_race WHERE name = ?", name)
-	if err := row.Scan(&pr.ID, &pr.Name, &pr.Speed); err != nil {
+	if err := row.Scan(&playableRace.ID, &playableRace.Name, &playableRace.Speed); err != nil {
 		if err == sql.ErrNoRows {
-			return pr, err
+			return playableRace, err
 		}
-		return pr, err
+		return playableRace, err
 	}
 
-	startingLanguages, err := startingLanguages(pr.ID)
-	if err != nil {
-		return pr, err
-	}
-	pr.StartingLanguages = startingLanguages
+    return hydrateRace(playableRace)
+}
 
-	startingProficiencies, err := startingProficiencies(pr.ID)
-	if err != nil {
-		return pr, err
-	}
-	pr.StartingProficiencies = startingProficiencies
+func HydrateSubRace(subRace PlayableRace) (PlayableRace, error) {
+    row := db.QueryRow(`
+        SELECT main_race_id AS id 
+        FROM sub_race
+        WHERE sub_race_id = ?
+        LIMIT 1
+        `, 
+        subRace.ID)
 
-	startingAbilityBonuses, err := startingAbilityBonuses(pr.ID)
-	if err != nil {
-		return pr, err
-	}
-	pr.AbilityBonuses = startingAbilityBonuses
+    var mainRaceId int
+    if err := row.Scan(&mainRaceId); err != nil {
+        if err == sql.ErrNoRows {
+            return subRace, nil
+        }
+        return subRace, err
+    }
 
-	startingTraits, err := startingTraits(pr.ID)
-	if err != nil {
-		return pr, err
-	}
-	pr.Traits = startingTraits
+    mainRace, err := PlayableRaceById(mainRaceId)
+    if err != nil {
+        return subRace, err
+    }
 
-	subRaces, err := subRaces(pr.ID)
-	if err != nil {
-		return pr, err
-	}
-	pr.SubRaces = subRaces
+    if subRace.Speed == 0 {
+        subRace.Speed = mainRace.Speed
+    }
 
-	startingProficiencyOptions, err := startingProficiencyOptions(pr.ID)
-	if err != nil {
-		return pr, err
-	}
-	pr.StartingProficiencyOptions = startingProficiencyOptions
+    subRace.AbilityBonuses = append(subRace.AbilityBonuses, mainRace.AbilityBonuses...)
+    subRace.StartingLanguages = append(subRace.StartingLanguages, mainRace.StartingLanguages...)
+    subRace.StartingProficiencies = append(subRace.StartingProficiencies, mainRace.StartingProficiencies...)
+    subRace.StartingProficiencyOptions = append(subRace.StartingProficiencyOptions, mainRace.StartingProficiencyOptions...)
+    subRace.Traits = append(subRace.Traits, mainRace.Traits...)
 
-	return pr, nil
+    return subRace, nil
 }
 
 func InsertTrait(trait string) error {
