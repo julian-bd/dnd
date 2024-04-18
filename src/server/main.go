@@ -15,9 +15,9 @@ func main() {
 		fmt.Println(err)
 	}
 
-    if !data.HasBeenSeeded() {
-        ripper.Seed()
-    }
+	if !data.HasBeenSeeded() {
+		ripper.Seed()
+	}
 
 	e := echo.New()
 	e.Use(middleware.Logger())
