@@ -25,3 +25,14 @@ func InitDB() error {
 	}
 	return db.Ping()
 }
+
+func HasBeenSeeded() bool {
+	row := db.QueryRow("SELECT id FROM playable_race limit 1")
+    var id int
+    if err := row.Scan(&id); err != nil {
+        if err == sql.ErrNoRows {
+            return false
+        }
+    }
+    return true
+}

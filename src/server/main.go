@@ -17,8 +17,9 @@ func main() {
 		fmt.Println(err)
 	}
 
-    // TODO: Only seed once
-    ripper.Seed()
+    if !data.HasBeenSeeded() {
+        ripper.Seed()
+    }
 
 	playableRaceNames, err := data.PlayableRaceNames()
 	if err != nil {
