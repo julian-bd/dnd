@@ -105,7 +105,7 @@ func PlayableRaceById(id int) (PlayableRace, error) {
 		return playableRace, err
 	}
 
-    return hydrateRace(playableRace)
+	return hydrateRace(playableRace)
 }
 
 func PlayableRaceByName(name string) (PlayableRace, error) {
@@ -119,66 +119,66 @@ func PlayableRaceByName(name string) (PlayableRace, error) {
 		return playableRace, err
 	}
 
-    return hydrateRace(playableRace)
+	return hydrateRace(playableRace)
 }
 
 func HydrateSubRace(subRace PlayableRace) (PlayableRace, error) {
-    row := db.QueryRow(`
+	row := db.QueryRow(`
         SELECT main_race_id AS id 
         FROM sub_race
         WHERE sub_race_id = ?
         LIMIT 1
-        `, 
-        subRace.ID)
+        `,
+		subRace.ID)
 
-    var mainRaceId int
-    if err := row.Scan(&mainRaceId); err != nil {
-        if err == sql.ErrNoRows {
-            return subRace, nil
-        }
-        return subRace, err
-    }
+	var mainRaceId int
+	if err := row.Scan(&mainRaceId); err != nil {
+		if err == sql.ErrNoRows {
+			return subRace, nil
+		}
+		return subRace, err
+	}
 
-    mainRace, err := PlayableRaceById(mainRaceId)
-    if err != nil {
-        return subRace, err
-    }
+	mainRace, err := PlayableRaceById(mainRaceId)
+	if err != nil {
+		return subRace, err
+	}
 
-    if subRace.Speed == 0 {
-        subRace.Speed = mainRace.Speed
-    }
+	if subRace.Speed == 0 {
+		subRace.Speed = mainRace.Speed
+	}
 
-    subRace.AbilityBonuses = append(subRace.AbilityBonuses, mainRace.AbilityBonuses...)
-    subRace.StartingLanguages = append(subRace.StartingLanguages, mainRace.StartingLanguages...)
-    subRace.StartingProficiencies = append(subRace.StartingProficiencies, mainRace.StartingProficiencies...)
-    subRace.StartingProficiencyOptions = append(subRace.StartingProficiencyOptions, mainRace.StartingProficiencyOptions...)
-    subRace.Traits = append(subRace.Traits, mainRace.Traits...)
+	subRace.AbilityBonuses = append(subRace.AbilityBonuses, mainRace.AbilityBonuses...)
+	subRace.StartingLanguages = append(subRace.StartingLanguages, mainRace.StartingLanguages...)
+	subRace.StartingProficiencies = append(subRace.StartingProficiencies, mainRace.StartingProficiencies...)
+	subRace.StartingProficiencyOptions = append(subRace.StartingProficiencyOptions, mainRace.StartingProficiencyOptions...)
+	subRace.Traits = append(subRace.Traits, mainRace.Traits...)
 
-    return subRace, nil
+	return subRace, nil
 }
 
 func InsertTrait(trait string) error {
-    _, err := db.Exec("INSERT INTO trait (name) VALUES (?)", trait)
-    if err != nil {
-        return err
-    }
-    return nil
+	_, err := db.Exec("INSERT INTO trait (name) VALUES (?)", trait)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func InsertProficiency(trait string) error {
-    _, err := db.Exec("INSERT INTO proficiency (name) VALUES (?)", trait)
-    if err != nil {
-        return err
-    }
-    return nil
+	_, err := db.Exec("INSERT INTO proficiency (name) VALUES (?)", trait)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func InsertLanguage(trait string) error {
-    _, err := db.Exec("INSERT INTO language (name) VALUES (?)", trait)
-    if err != nil {
-        return err
-    }
-    return nil
+	_, err := db.Exec("INSERT INTO language (name) VALUES (?)", trait)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func InsertPlayableRace(playableRace PlayableRace) (int64, error) {
