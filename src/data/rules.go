@@ -19,6 +19,32 @@ func AbilityNames() ([]string, error) {
 	}
 	return abilities, nil
 }
+type Item struct {
+    Name        string
+    Description string
+}
+
+func Traits() ([]Item, error) {
+    var items []Item
+    rows, err := db.Query("SELECT name, description FROM trait")
+    if err != nil {
+        return nil, err
+    }
+    defer rows.Close()
+    for rows.Next() {
+        var item Item
+	//row := db.QueryRow("SELECT id, name, speed FROM playable_race WHERE id = ?", id)
+	//if err := row.Scan(&playableRace.ID, &playableRace.Name, &playableRace.Speed); err != nil {
+        if err := rows.Scan(&item.Name, &item.Description); err != nil {
+            return nil, err
+        }
+        items = append(items, item)
+    }
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+    return items, nil
+}
 
 func TraitNames() ([]string, error) {
 	var traits []string

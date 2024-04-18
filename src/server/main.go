@@ -15,9 +15,7 @@ func main() {
 		fmt.Println(err)
 	}
 
-	if !data.HasBeenSeeded() {
-		ripper.Seed()
-	}
+    ripper.Seed()
 
 	e := echo.New()
 	e.Use(middleware.Logger())
@@ -28,6 +26,7 @@ func main() {
 	e.GET("/PlayableRaces/:name", playableRacesName)
 	e.GET("/PlayableRaces", playableRaces)
 	e.POST("/PlayableRaces", postPlayableRace)
+	e.GET("/Traits", traits)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }

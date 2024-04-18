@@ -36,3 +36,7 @@ type raceResponse struct {
 	Traits                     []indexNameUrl
 	SubRaces                   []indexNameUrl `json:"subraces"`
 }
+type traitResponse struct {
+    Name string
+    Desc []string
+}
