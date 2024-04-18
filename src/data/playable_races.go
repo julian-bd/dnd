@@ -157,8 +157,8 @@ func HydrateSubRace(subRace PlayableRace) (PlayableRace, error) {
 	return subRace, nil
 }
 
-func InsertTrait(trait string) error {
-	_, err := db.Exec("INSERT INTO trait (name) VALUES (?)", trait)
+func InsertTrait(name string, description string) error {
+	_, err := db.Exec("INSERT INTO trait (name, description) VALUES (?, ?)", name, description)
 	if err != nil {
 		return err
 	}
@@ -447,29 +447,6 @@ type startingProficiencyOptionRow struct {
 	Count   int
 }
 
-/*
-DROP TABLE IF EXISTS ability;
-CREATE TABLE ability (
-
-	id          INT AUTO_INCREMENT NOT NULL,
-	name        VARCHAR(128) NOT NULL,
-	PRIMARY KEY (id),
-	UNIQUE (name)
-
-);
-
-DROP TABLE IF EXISTS starting_ability_bonus;
-CREATE TABLE starting_ability_bonus (
-
-	playable_race_id INT NOT NULL,
-	ability_id INT NOT NULL,
-	amount INT NOT NULL,
-	FOREIGN KEY (playable_race_id) REFERENCES playable_race(id),
-	FOREIGN KEY (ability_id) REFERENCES ability(id),
-	CONSTRAINT id UNIQUE (playable_race_id, ability_id)
-
-);
-*/
 func abilityBonuses(id int) ([]AbilityBonus, error) {
 	query := `
         SELECT ability.name, bonus.amount

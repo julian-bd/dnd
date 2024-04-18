@@ -10,6 +10,11 @@ type indexContent struct {
 	HeaderContent headerContent
 }
 
+type itemsWithDescriptionContent struct {
+	HeaderContent headerContent
+    Content       []data.Item
+}
+
 type playableRaceContent struct {
 	HeaderContent  headerContent
 	AbilityBonuses []data.AbilityBonus

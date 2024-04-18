@@ -1,6 +1,10 @@
 package ripper
 
 import (
+	"encoding/json"
+	"net/http"
+	"strings"
+
 	"github.com/julian-bd/dnd/data"
 )
 
@@ -11,7 +15,18 @@ func seedTraits() error {
 	}
 	// TODO: This really should be a batch insert
 	for _, t := range results.Results {
-		err := data.InsertTrait(t.Name)
+        resp, err := http.Get(baseUrl + t.Url)
+        if err != nil {
+            return err
+        }
+        defer resp.Body.Close()
+        var trait traitResponse
+        err = json.NewDecoder(resp.Body).Decode(&trait)
+		if err != nil {
+			return err
+		}
+        description := strings.Join(trait.Desc, "\n")
+		err = data.InsertTrait(trait.Name, description)
 		if err != nil {
 			return err
 		}

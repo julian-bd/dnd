@@ -27,6 +27,7 @@ DROP TABLE IF EXISTS trait;
 CREATE TABLE trait (
     id          INT AUTO_INCREMENT NOT NULL,
     name        VARCHAR(128) NOT NULL,
+    description VARCHAR(2048) NOT NULL,
     PRIMARY KEY (id),
     UNIQUE (name)
 );

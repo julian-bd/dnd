@@ -125,3 +125,15 @@ func playableRace(request createPlayableRace) (data.PlayableRace, error) {
 	// TODO: ability bonuses
 	return pr, nil
 }
+
+func traits(c echo.Context) error {
+    traits, err := data.Traits()
+    if err != nil {
+		fmt.Println(err)
+    }
+    content := itemsWithDescriptionContent{
+    	HeaderContent: headers(),
+    	Content:       traits,
+    }
+    return c.Render(200, "traits", content)
+}
