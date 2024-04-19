@@ -1,4 +1,17 @@
+SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS ability;
+DROP TABLE IF EXISTS language;
 DROP TABLE IF EXISTS playable_race;
+DROP TABLE IF EXISTS proficiency;
+DROP TABLE IF EXISTS starting_ability_bonus;
+DROP TABLE IF EXISTS starting_language;
+DROP TABLE IF EXISTS starting_proficiency;
+DROP TABLE IF EXISTS starting_proficiency_option;
+DROP TABLE IF EXISTS starting_trait;
+DROP TABLE IF EXISTS sub_race;
+DROP TABLE IF EXISTS trait;
+SET FOREIGN_KEY_CHECKS = 1;
+
 CREATE TABLE playable_race (
     id          INT AUTO_INCREMENT NOT NULL,
     name        VARCHAR(128) NOT NULL,
@@ -7,7 +20,6 @@ CREATE TABLE playable_race (
     UNIQUE (name)
 );
 
-DROP TABLE IF EXISTS ability;
 CREATE TABLE ability (
     id          INT AUTO_INCREMENT NOT NULL,
     name        VARCHAR(128) NOT NULL,
@@ -15,7 +27,6 @@ CREATE TABLE ability (
     UNIQUE (name)
 );
 
-DROP TABLE IF EXISTS proficiency;
 CREATE TABLE proficiency (
     id          INT AUTO_INCREMENT NOT NULL,
     name        VARCHAR(128) NOT NULL,
@@ -23,7 +34,6 @@ CREATE TABLE proficiency (
     UNIQUE (name)
 );
 
-DROP TABLE IF EXISTS trait;
 CREATE TABLE trait (
     id          INT AUTO_INCREMENT NOT NULL,
     name        VARCHAR(128) NOT NULL,
@@ -32,7 +42,6 @@ CREATE TABLE trait (
     UNIQUE (name)
 );
 
-DROP TABLE IF EXISTS language;
 CREATE TABLE language (
     id          INT AUTO_INCREMENT NOT NULL,
     name        VARCHAR(128) NOT NULL,
@@ -41,7 +50,6 @@ CREATE TABLE language (
 );
 
 
-DROP TABLE IF EXISTS starting_ability_bonus;
 CREATE TABLE starting_ability_bonus (
     playable_race_id INT NOT NULL,
     ability_id INT NOT NULL,
@@ -53,7 +61,6 @@ CREATE TABLE starting_ability_bonus (
 
 
 
-DROP TABLE IF EXISTS starting_proficiency;
 CREATE TABLE starting_proficiency (
     playable_race_id INT NOT NULL,
     proficiency_id INT NOT NULL,
@@ -63,7 +70,6 @@ CREATE TABLE starting_proficiency (
 );
 
 
-DROP TABLE IF EXISTS starting_language;
 CREATE TABLE starting_language (
     playable_race_id INT NOT NULL,
     language_id INT NOT NULL,
@@ -73,7 +79,6 @@ CREATE TABLE starting_language (
 );
 
 
-DROP TABLE IF EXISTS starting_trait;
 CREATE TABLE starting_trait (
     playable_race_id INT NOT NULL,
     trait_id INT NOT NULL,
@@ -82,7 +87,6 @@ CREATE TABLE starting_trait (
     CONSTRAINT id UNIQUE (playable_race_id, trait_id)
 );
 
-DROP TABLE IF EXISTS sub_race;
 CREATE TABLE sub_race (
     sub_race_id INT PRIMARY KEY,
     main_race_id INT NOT NULL,
@@ -90,7 +94,6 @@ CREATE TABLE sub_race (
     FOREIGN KEY (main_race_id) REFERENCES playable_race(id)
 );
 
-DROP TABLE IF EXISTS starting_proficiency_option;
 CREATE TABLE starting_proficiency_option (
     id          INT AUTO_INCREMENT NOT NULL,
     group_id    binary(16) NOT NULL,
