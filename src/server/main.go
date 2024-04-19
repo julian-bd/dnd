@@ -1,8 +1,9 @@
 package main
 
 import (
-	"fmt"
+	"log"
 
+	"github.com/gofor-little/env"
 	"github.com/julian-bd/dnd/data"
 	"github.com/julian-bd/dnd/ripper"
 	"github.com/labstack/echo/v4"
@@ -10,10 +11,18 @@ import (
 )
 
 func main() {
+    if err := env.Load("server/.env"); err != nil {
+		log.Fatal(err)
+    }
 	err := data.InitDB()
 	if err != nil {
-		fmt.Println(err)
+		log.Fatal(err)
 	}
+
+    err = data.CreateTables()
+    if err != nil {
+        log.Fatal(err)
+    }
 
     ripper.Seed()
 

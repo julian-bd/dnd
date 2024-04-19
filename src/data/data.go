@@ -2,26 +2,35 @@ package data
 
 import (
 	"database/sql"
-	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/go-sql-driver/mysql"
+	"github.com/gofor-little/env"
 )
 
 var db *sql.DB
 
 func InitDB() error {
+    user, err := env.MustGet("DB_USER")
+    if err != nil {
+        return err
+    }
+    pass, err := env.MustGet("DB_PASS")
+    if err != nil {
+        return err
+    }
 	cfg := mysql.Config{
-		User:   os.Getenv("DBUSER"),
-		Passwd: os.Getenv("DBPASS"),
+		User:   user,
+		Passwd: pass,
 		Net:    "tcp",
 		Addr:   "127.0.0.1:3306",
 		DBName: "dnd",
+        MultiStatements: true,
 	}
-	var err error
-	db, err = sql.Open("mysql", cfg.FormatDSN())
+    db, err := sql.Open("mysql", cfg.FormatDSN())
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	return db.Ping()
 }
@@ -35,4 +44,19 @@ func HasBeenSeeded() bool {
 		}
 	}
 	return true
+}
+
+func CreateTables() error {
+    // TODO: is this the right path?
+    filePath := filepath.Join("data/seed.sql")
+    file, err := os.ReadFile(filePath)
+    if err != nil {
+        return err
+    }
+    sql := string(file)
+    _, err = db.Exec(sql)
+    if err != nil {
+        return err
+    }
+    return nil
 }
